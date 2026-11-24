@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Storybook (demo)</title>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#ece2cf;color:#111;display:flex;justify-content:center;min-height:100vh;font-family:"Patrick Hand",cursive}
+#wrap{--W:min(calc(100vw - 24px),calc((100vh - 64px) / 0.86),1500px);width:var(--W);padding:14px 0}
+#stage{position:relative;width:100%;aspect-ratio:610/362;overflow:hidden;background:#ece2cf;outline:4px double rgba(17,17,17,.42);outline-offset:4px}
+.layer{position:absolute;inset:0;will-change:transform,opacity}
+.layer img{width:100%;height:100%;display:block;user-select:none;-webkit-user-drag:none}
+#hots{position:absolute;inset:0;transition:opacity .25s}
+#hots svg{width:100%;height:100%;display:block}
+#hots path{fill:rgba(255,255,255,0);stroke:#111;stroke-width:1.4;stroke-opacity:.3;stroke-linejoin:round;cursor:pointer;pointer-events:all;transition:fill .2s,stroke-opacity .2s;vector-effect:non-scaling-stroke}
+#hots path:hover{fill:rgba(255,255,255,.2);stroke-opacity:.5}
+#under{margin-top:18px}
+#cap{height:calc(var(--W) * .15);overflow:hidden;background:#faf6ee;border:1.5px solid rgba(17,17,17,.35);border-radius:3px;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 1.2em;transition:opacity .2s}
+#cap>span{display:block}
+.ans{display:inline-block;margin:0 .5em;padding:0 .4em;border:1px solid rgba(17,17,17,.28);border-radius:3px;cursor:pointer;transition:background .2s}
+.ans:hover{background:#fff}
+
+.btn{background:transparent;border:1px solid rgba(17,17,17,.28);border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:2px 14px;height:calc(var(--W) * .045);transition:background .2s}
+.btn:hover{background:rgba(255,255,255,.5)}
+.btn.off{visibility:hidden}
+.w{display:inline-block;white-space:nowrap;margin-right:calc(var(--h) * .42)}
+.g{display:inline-block;height:calc(var(--h) * 2.75);vertical-align:calc(var(--h) * -0.875);margin:0 -.02em}
+.dc{display:inline-block;height:calc(var(--h) * 2.35);vertical-align:calc(var(--h) * -0.04);margin-right:.04em}
+.p{font-size:calc(var(--h) * 1.5);line-height:1}
+#row{display:flex;justify-content:space-between;align-items:flex-start;margin-top:12px;gap:12px}
+#bag{display:flex;gap:12px;min-height:calc(var(--W) * .085)}
+#side{display:flex;gap:10px}
+#bag .it{width:calc(var(--W) * .085);height:calc(var(--W) * .085);border:1.5px solid rgba(17,17,17,.35);background:#faf6ee;border-radius:3px;display:flex;align-items:center;justify-content:center;animation:pop .3s ease-out}
+#bag .it img{max-width:84%;max-height:84%}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+#end{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(236,226,207,.7);animation:fade .4s}
+@keyframes fade{from{opacity:0}}
+</style>
+</head>
+<body>
+<div id="wrap">
+<div id="stage"><div class="layer" id="L0"><img alt=""></div><div id="hots"></div><div id="end"><div id="endT"></div></div></div>
+<div id="under"><div id="cap"></div></div>
+<div id="row"><div id="bag"></div><div id="side"><div class="btn off" id="mapB" onclick="toMap()"></div><div class="btn off" id="closeB" onclick="closeBook()"></div></div></div>
+</div>
+<script>
+const FR={"book1": [[32, 14, 35, 75, "open", "M240.7 47.0 L377.0 47.0 L422.4 105.7 L422.4 281.6 L377.0 340.3 L240.7 340.3 L195.3 281.6 L195.3 105.7Z"]], "book3": [[19, 13, 62, 75, "enter", "M151.1 45.6 L271.8 52.7 L352.2 52.7 L472.9 45.6 L513.2 100.4 L513.2 271.6 L472.9 330.3 L352.2 335.0 L271.8 335.0 L151.1 330.3 L110.8 271.6 L110.8 100.4Z"]], "land": [[3, 37, 14, 11, "castle", "M35.1 141.4 L89.7 139.0 L107.8 146.9 L107.8 172.7 L89.7 181.3 L35.1 181.3 L17.0 173.4 L17.0 150.0Z"], [42, 5, 51, 43, "dragon", "M273.3 169.5 L327.8 141.3 L364.2 108.5 L418.7 38.1 L449.8 26.3 L488.8 61.5 L518.6 90.5 L569.2 142.1 L566.6 164.0 L508.2 178.1 L442.0 182.0 L301.9 179.6Z"], [52, 38, 45, 57, "village", "M337.5 182.8 L392.0 149.9 L443.9 142.9 L545.2 154.6 L585.4 196.8 L604.9 311.8 L558.2 352.5 L398.5 359.5 L340.1 328.2 L324.5 227.3Z"], [28, 67, 27, 18, "trollGo", "M205.2 260.0 L306.4 252.9 L341.4 262.3 L345.3 297.5 L311.6 311.6 L206.5 318.6 L171.4 309.2 L171.4 274.0Z"], [0, 83, 64, 15, "lake", "M65.2 317.1 L283.2 312.4 L366.3 322.6 L397.5 357.8 L324.8 369.5 L75.6 369.5 L4.0 359.4 L4.0 328.9Z"], [65, 72, 15, 23, "mill", "M420.6 281.5 L451.8 272.1 L469.9 273.7 L493.3 287.7 L501.1 304.2 L501.1 339.4 L488.1 352.6 L449.2 357.3 L429.7 353.4 L410.2 337.0 L405.0 322.1 L408.9 294.0Z"]], "village": [[33, 5, 39, 70, "knightGo", "M222.7 96.3 L288.9 49.4 L329.2 29.8 L383.7 18.1 L412.2 27.5 L443.4 67.4 L451.2 119.8 L443.4 237.1 L395.4 278.5 L259.1 285.6 L211.1 252.7 L203.3 147.1Z"], [72, 20, 26, 52, "bakery", "M479.7 72.9 L581.0 77.5 L614.7 116.7 L614.7 229.3 L582.3 268.4 L484.9 273.1 L451.2 234.0 L447.3 112.0Z"], [0, 52, 36, 33, "bridge", "M39.8 211.8 L172.1 197.8 L218.9 213.4 L226.7 274.4 L182.5 300.2 L42.4 316.6 L4.0 301.0 L4.0 237.7Z"]], "knight": [[35, 11, 30, 86, "knight", "M214.6 317.7 L214.6 162.8 L223.6 104.2 L250.9 83.1 L265.2 68.2 L280.8 44.7 L297.6 36.9 L332.7 36.9 L350.8 47.1 L370.3 77.6 L383.3 95.6 L402.8 119.0 L409.3 176.1 L409.3 323.9 L370.3 372.0 L253.5 370.1Z"]], "troll": [[17, 2, 62, 97, "troll", "M242.1 25.6 L265.5 6.8 L288.9 4.0 L335.6 4.0 L360.3 8.4 L387.5 31.9 L396.6 57.7 L396.6 111.6 L407.0 133.5 L438.1 145.3 L456.3 164.8 L479.7 211.8 L490.0 250.9 L497.8 321.2 L492.6 351.7 L469.3 372.0 L396.6 372.0 L201.9 372.0 L129.2 371.3 L105.9 345.5 L100.7 315.0 L108.5 249.3 L121.4 211.8 L152.6 164.8 L176.0 146.1 L214.9 136.7 L229.2 113.2 L233.1 52.2Z"]], "lake": [[42, 69, 57, 29, "dock", "M261.5 305.7 L277.1 275.2 L347.2 263.4 L541.9 258.7 L610.7 279.9 L620.0 347.9 L552.3 370.6 L330.3 370.6 L256.3 359.6 L256.3 326.8Z"], [46, 26, 52, 40, "water", "M312.4 148.5 L367.0 122.7 L431.9 110.2 L572.0 98.5 L618.8 122.7 L618.8 207.2 L572.0 238.5 L431.9 247.9 L364.4 243.2 L302.1 219.7 L283.9 200.9 L291.7 168.1Z"]], "dragon": [[33, 23, 60, 72, "dragonA", "M205.0 223.0 L224.4 166.6 L246.5 137.7 L293.2 107.2 L327.0 93.9 L381.5 84.5 L423.0 84.5 L493.1 93.9 L528.1 108.8 L563.2 144.0 L577.5 172.9 L585.3 224.5 L580.1 256.6 L556.7 301.2 L513.9 325.4 L408.7 353.6 L364.6 355.1 L337.4 331.7 L311.4 316.0 L260.8 292.6 L234.8 276.1 L207.6 250.3Z"], [3, 63, 39, 35, "hoard", "M23.2 307.9 L50.5 270.4 L72.6 253.2 L111.5 239.1 L141.4 236.0 L192.0 240.7 L220.5 252.4 L255.6 282.9 L262.1 308.7 L246.5 355.6 L195.9 371.3 L59.6 371.3 L14.2 361.1 L14.2 330.6Z"]], "sword": [[34, 0, 29, 78, "takeSword", "M290.3 4.0 L321.4 4.0 L331.8 15.9 L331.8 79.3 L344.8 100.4 L383.7 100.4 L396.7 109.0 L396.7 134.8 L382.4 143.4 L339.6 143.4 L325.3 174.7 L325.3 268.5 L316.2 299.8 L289.0 299.8 L279.9 268.5 L279.9 174.7 L265.6 143.4 L222.8 143.4 L208.5 134.8 L208.5 109.0 L222.8 100.4 L265.6 100.4 L279.9 79.3 L279.9 15.9Z"], [64, 29, 36, 68, "snore", "M407.5 202.9 L446.4 158.3 L480.2 137.2 L542.5 118.4 L576.2 110.6 L615.2 105.9 L620.0 157.5 L620.0 317.1 L610.0 365.5 L555.5 351.5 L516.5 335.8 L454.2 303.0 L425.7 277.2 L402.3 232.6Z"]], "castle": [[45, 80, 9, 16, "gate", "M291.4 299.6 L326.4 299.6 L338.1 312.1 L338.1 349.6 L326.4 362.2 L291.4 362.2 L279.7 349.6 L279.7 312.1Z"], [7, 2, 82, 73, "towers", "M32.9 271.5 L32.9 222.2 L49.8 205.8 L100.4 205.8 L122.5 165.1 L138.1 43.1 L160.1 7.9 L210.8 24.3 L232.8 53.3 L248.4 123.6 L257.5 147.1 L269.2 147.1 L278.3 134.6 L293.8 97.1 L306.8 89.2 L330.2 103.3 L344.4 117.4 L363.9 145.5 L373.0 137.7 L380.8 86.1 L392.5 61.9 L419.7 40.7 L437.9 42.3 L465.2 68.1 L476.8 92.4 L484.6 139.3 L502.8 156.5 L549.5 161.2 L565.1 187.8 L565.1 262.9 L458.7 287.9 L139.4 287.9Z"]], "crown": [[26, 0, 46, 75, "takeCrown", "M173.3 47.4 L204.4 35.7 L229.1 24.7 L271.9 4.0 L303.1 4.0 L353.7 4.0 L373.2 4.0 L381.0 6.0 L393.9 14.6 L425.1 33.3 L439.4 46.6 L451.1 67.8 L452.4 117.8 L444.6 246.9 L387.5 289.9 L223.9 289.9 L166.8 246.9 L159.0 117.8 L157.7 70.1 L161.6 56.0Z"]], "book2": []};
+/* hand lettering */
+const LET=/[A-Za-z]/;
+function word(w,cap){let s='';for(const c of w){
+ if(cap&&LET.test(c)){s+=`<img class="dc" src="font/b/${c.toUpperCase().charCodeAt(0)}.png" alt="${c}">`;cap=false;continue;}
+ s+=LET.test(c)?`<img class="g" src="font/h/${c.charCodeAt(0)}.png" alt="${c}">`:`<span class="p">${c}</span>`;}
+ return `<span class="w">${s}</span>`;}
+function hand(t,h,dc=true){let f=dc;return `<span style="--h:${h}px;font-size:${h*1.6}px;line-height:${h*2.55}px">`+t.split(' ').map(w=>{const r=word(w,f);f=false;return r;}).join('')+'</span>';}
+const W=()=>document.getElementById('stage').clientWidth;
+const capH=()=>Math.max(16,W()/30);
+function fit(c,t){let h=W()/17;c.innerHTML=hand(t,h);let n=0;while(c.firstChild.offsetHeight>c.clientHeight*0.96&&n++<30){h*=0.94;c.innerHTML=hand(t,h);}}
+const RID=['What has roots no one sees, is taller than trees, up it goes, yet never grows','a tree','a mountain','a cloud'];
+function riddle(msg){const c=document.getElementById('cap');c.style.opacity=0;setTimeout(()=>{let h=W()/22,n=0;
+ const draw=()=>{c.innerHTML=`<span>${hand((msg?msg+' ':'')+RID[0]+'?',h)}<br>${[1,2,3].map(i=>`<span class="ans" onclick="answer(${i})">${hand(RID[i],h*.9,false)}</span>`).join('')}</span>`;};
+ draw();while(c.firstChild.offsetHeight>c.clientHeight*0.96&&n++<30){h*=0.94;draw();}c.style.opacity=1;},150);}
+function answer(i){if(i===2){S.troll=1;say('Correct! The troll eats the bread and lets you pass.');}else riddle('Wrong.');}
+function say(t){const c=document.getElementById('cap');c.style.opacity=0;setTimeout(()=>{if(t)fit(c,t);else c.innerHTML='';c.style.opacity=1;},150);}
+/* state */
+const S={};let bag=[],cur='book1',busy=false,last='';
+const has=k=>bag.includes(k);
+function drawBag(){document.getElementById('bag').innerHTML=bag.map(k=>`<div class="it" title="${k}"><img src="img/${'icon_'+k}.png" alt="${k}"></div>`).join('');}
+function give(k){if(!has(k)){bag.push(k);drawBag();}}
+const INTRO={book1:'',book3:'Once upon a time, a crown was lost.',land:'Where will you go?',village:'The village.',knight:'A knight guards the gate.',troll:'A troll blocks the bridge.',lake:'A still lake.',dragon:'The dragon sleeps on its gold.',sword:'A sword in the hoard.',castle:'The castle.',crown:'The crown.'};
+const IN_BOOK=['book1','book2','book3'];
+function spots(){const h=document.getElementById('hots');
+ h.innerHTML='<svg viewBox="7 7 610 362" preserveAspectRatio="none">'+(FR[cur]||[]).map((s,i)=>`<path d="${s[5]}" data-i="${i}"/>`).join('')+'</svg>';
+ h.querySelectorAll('path').forEach(p=>p.onclick=()=>{if(busy)return;const s=FR[cur][+p.dataset.i];A[s[4]](s.slice(0,4));});
+ document.getElementById('mapB').classList.toggle('off',IN_BOOK.includes(cur)||cur==='land');
+ document.getElementById('closeB').classList.toggle('off',cur==='book1'||cur==='book2');}
+/* transitions: crossfade, optional zoom from a region */
+const E='cubic-bezier(.45,0,.2,1)';
+function go(name,opts={}){busy=true;const st=document.getElementById('stage'),old=st.querySelector('.layer'),nw=document.createElement('div');
+ nw.className='layer';nw.innerHTML=`<img src="img/${name}.jpg" alt="">`;nw.style.opacity=0;st.insertBefore(nw,document.getElementById('hots'));
+ const hots=document.getElementById('hots');hots.style.opacity=0;const dur=opts.dur||520;
+ const img=nw.querySelector('img');
+ const run=()=>{
+  if(opts.zoom){const r=opts.zoom,s=Math.min(100/r[2],100/r[3])*.8,cx=r[0]+r[2]/2,cy=r[1]+r[3]/2;
+   old.style.transformOrigin=nw.style.transformOrigin=cx+'% '+cy+'%';
+   old.animate([{transform:'scale(1)'},{transform:`scale(${s})`}],{duration:dur,easing:E,fill:'forwards'});
+   nw.animate([{transform:`scale(${1/s*2.2})`,opacity:0},{transform:'scale(1)',opacity:1}],{duration:dur,easing:E,fill:'forwards',delay:dur*.25});}
+  else if(opts.out){const r=opts.out,s=Math.min(100/r[2],100/r[3])*.8,cx=r[0]+r[2]/2,cy=r[1]+r[3]/2;
+   nw.style.transformOrigin=old.style.transformOrigin=cx+'% '+cy+'%';
+   old.animate([{transform:'scale(1)',opacity:1},{transform:'scale(.6)',opacity:0}],{duration:dur,easing:E,fill:'forwards'});
+   nw.animate([{transform:`scale(${s})`,opacity:0},{transform:'scale(1)',opacity:1}],{duration:dur,easing:E,fill:'forwards'});}
+  else nw.animate([{opacity:0},{opacity:1}],{duration:dur,easing:'ease-in-out',fill:'forwards'});
+  setTimeout(()=>{old.remove();nw.style.opacity=1;cur=name;spots();hots.style.opacity=1;busy=false;if(opts.after)opts.after();},dur*(opts.zoom?1.25:1)+20);};
+ img.complete?run():img.onload=run;
+ cur=name;if(opts.cap!==undefined)say(opts.cap);else say(INTRO[name]||'');}
+function toMap(){if(!busy)go('land',{out:last||[40,40,20,20],cap:'Where will you go?'});}
+function closeBook(){if(busy)return;go('book3',{dur:380,cap:''});setTimeout(()=>go('book2',{dur:260,cap:''}),420);setTimeout(()=>go('book1',{dur:260,cap:''}),720);}
+function z(name,r){last=r;go(name,{zoom:r});}
+const A={
+open(){go('book2',{dur:240,cap:''});setTimeout(()=>go('book3',{dur:280}),290);},
+enter(r){z('land',[19,13,62,74]);},
+castle(r){z('castle',r)},dragon(r){z('dragon',r)},village(r){z('village',r)},trollGo(r){z('troll',r)},lake(r){z('lake',r)},
+knightGo(r){go('knight',{zoom:r})},
+knight(){const L=['Halt, traveler.','The crown was lost long ago.','A troll guards the bridge. Bring him bread.','Off you go.'];S.k=S.k||0;say(L[S.k%4]);S.k++;},
+bakery(){say('The baker is out of bread. Try the mill.');},
+mill(){if(has('bread'))return say('The mill wheel turns and turns.');give('bread');say('Fresh bread from the mill.');},
+bridge(r){go('troll',{zoom:r});},
+troll(){if(S.troll)return say('The troll is full and happy. You may pass.');if(!has('bread'))return say('The troll is hungry. He wants bread.');S.fed=1;riddle();},
+water(){say('The water is calm and cold.');},
+dock(){if(has('key'))return say('Just the old dock.');give('key');say('A key hidden under the dock.');},
+dragonA(){say('Shh. The dragon is sleeping.');},
+hoard(r){go('sword',{zoom:r});},
+takeSword(){if(has('sword'))return say('The sword is yours.');give('sword');say('You pull the sword from the gold.');},
+snore(){say('The dragon snores.');},
+gate(r){say(has('key')?'The key opens the gate.':'The gate is locked. You need a key.');setTimeout(()=>go('crown',{zoom:r}),900);},
+towers(){say('The castle on the hill.');},
+takeCrown(){give('crown');document.getElementById('endT').innerHTML=hand('The End',W()/14);document.getElementById('end').style.display='flex';say('Read again? Close the book.');}
+};
+const _close=closeBook;closeBook=function(){document.getElementById('end').style.display='none';_close();};
+(function(){const L='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';const ps=[];
+for(const c of L){ps.push(new Promise(r=>{const i=new Image();i.onload=i.onerror=r;i.src='font/h/'+c.charCodeAt(0)+'.png';}));if(c<'a')ps.push(new Promise(r=>{const i=new Image();i.onload=i.onerror=r;i.src='font/b/'+c.charCodeAt(0)+'.png';}));}
+Promise.all(ps).then(()=>{document.getElementById('mapB').innerHTML=hand('map',Math.max(12,W()/70),false);document.getElementById('closeB').innerHTML=hand('close book',Math.max(12,W()/70),false);});})();
+document.getElementById('L0').querySelector('img').src='img/book1.jpg';spots();drawBag();
+</script>
+</body>
+</html>
